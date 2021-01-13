@@ -1,0 +1,26 @@
+{
+  "name": "nodejs_url-shortner",
+  "version": "1.0.0",
+  "description": "url shortner based on nodejs and mongodb",
+  "author": "Bunty9 <cbipin2000@gmail.com>",
+  "keywords": [
+    "nodejs mongodb urlshortner"
+  ],
+  "license": "GPL v3.0",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Bunty9/NodeJs_url-shortner.git"
+  },
+  "scripts": {
+    "start": "./bin/app",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "http-errors": "^1.8.0",
+    "pino": "^6.10.0",
+    "pino-http": "^5.3.0",
+    "pino-pretty": "^4.3.0"
+  }
+}
