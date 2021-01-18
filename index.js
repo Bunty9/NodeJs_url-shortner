@@ -3,6 +3,11 @@ require('dotenv').config();
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const mongoConnect = require('./databaseAuth/mongoConnect');
+const flash = require('express-flash')
+const session = require('express-session')
+const passport = require('passport')
+const methodOverride = require('method-override')
+const routes = require('./routes/routes');
 
 
 // Create the express app
@@ -15,10 +20,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
-
+app.set('view-engine','ejs');
+app.use(flash())
+app.use(session({
+  secret:process.env.SESSION_SECRET,
+  resave:false,
+  saveUninitialized:false
+}))
+app.use(passport.initialize())
+app.use(passport.session())
+app.use(methodOverride('_method'))
 // Routes and middleware
 // app.use(/* ... */)
 // app.get(/* ... */)
+app.use('/api',routes)
+
 
 // Error handlers
 app.use(function fourOhFourHandler (req, res) {
