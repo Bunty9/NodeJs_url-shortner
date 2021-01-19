@@ -16,26 +16,29 @@ const bcrypt = require('bcrypt')
 const passport = require('passport')
 const User = require('../models/user_model')
 const initializePassport = require('../passport-config')
+const ShortUrl = require('../models/url_schema')
 
 initializePassport(
   passport,
   email => User.findOne(users => User.email === email),
-  id => User.findById(users => User.id === id)
+  id => User.findById(users => User.id === id),
 )
 
-router.route('/').get( checkAuthenticated,(req, res)=>{
-  res.render('index.ejs')
+router.route('/').get( checkAuthenticated,async (req, res)=>{
+  const owner = req.user._id
+  const shortUrls = await ShortUrl.find().where('owner').in(owner).exec()
+  res.render('index.ejs', { shortUrls: shortUrls })
 });
 
 router.route('/login').get(checkNotAuthenticated, (req, res)=>{
     res.render('login.ejs')
 });
 
-router.route('/login').post( checkNotAuthenticated,passport.authenticate('local', {
-  successRedirect: '/api',
-  failureRedirect: '/api/login',
-  failureFlash: true
-}))
+router.route('/login').post( checkNotAuthenticated,passport.authenticate('local', 
+    { successRedirect: '/api',
+    failureRedirect: '/api/login',
+    failureFlash: true }
+))
 
 router.route('/register').get(checkNotAuthenticated, (req, res)=>{
     res.render('register.ejs')
@@ -64,6 +67,25 @@ router.route('/register').post(checkNotAuthenticated, async (req, res)=>{
 router.route('/logout').delete( (req, res) => {
   req.logOut()
   res.redirect('/api/login')
+})
+
+
+
+
+router.route('/shortUrl').post(checkAuthenticated, async (req, res) => {
+  try {
+    console.log(req.user._id)
+    const newShortUrl = new ShortUrl(
+      {
+        owner:req.user._id,
+        full: req.body.fullUrl
+      });
+    await newShortUrl.save();
+    res.redirect('/api')
+  } catch (err) {
+    console.log(err)
+    res.status(500).send("server error");
+  }
 })
 
 // check if the user is authenticated if not redirect to login , this to block unauthenticated users from accessing the home page

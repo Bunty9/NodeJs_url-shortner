@@ -11,9 +11,6 @@
 // software and other kinds of works.
 
 
-
-
-
 const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;

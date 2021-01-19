@@ -8,8 +8,7 @@ const session = require('express-session')
 const passport = require('passport')
 const methodOverride = require('method-override')
 const routes = require('./routes/routes');
-
-
+const ShortUrl = require('./models/url_schema')
 // Create the express app
 const app = express()
 const port = process.env.PORT || 5000
@@ -35,7 +34,6 @@ app.use(methodOverride('_method'))
 // app.get(/* ... */)
 app.use('/api',routes)
 
-
 // Error handlers
 app.use(function fourOhFourHandler (req, res) {
   res.status(404).send()
@@ -44,6 +42,16 @@ app.use(function fiveHundredHandler (err, req, res, next) {
   console.error(err)
   res.status(500).send()
 })
+
+app.get('/:id', async (req, res) => {
+  const shortUrl = await ShortUrl.findOne({ short: req.params.id })
+  if (shortUrl == null) return res.sendStatus(404)
+
+  shortUrl.clicks++
+  shortUrl.save()
+  res.redirect(shortUrl.full)
+})
+
 
 // Start server
 app.listen(port, function (err) {
