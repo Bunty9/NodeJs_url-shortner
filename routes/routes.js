@@ -17,6 +17,7 @@ const passport = require('passport')
 const User = require('../models/user_model')
 const initializePassport = require('../passport-config')
 const ShortUrl = require('../models/url_schema')
+var {nanoid} = require('nanoid')
 
 initializePassport(
   passport,
@@ -48,7 +49,7 @@ router.route('/register').post(checkNotAuthenticated, async (req, res)=>{
     // hash the passwords
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password,salt);
-
+    
     try{
         const user = new User({
         username:req.body.username,
@@ -69,16 +70,25 @@ router.route('/logout').delete( (req, res) => {
   res.redirect('/api/login')
 })
 
+function genshort(req, res, next){
+  const short = req.body.short;
+  const id = nanoid(5)
+  // console.log(id)
+  if(short == ''){
+    req.body.short = id
+  }
+  next();
+}
 
-
-
-router.route('/shortUrl').post(checkAuthenticated, async (req, res) => {
+router.route('/shortUrl').post(checkAuthenticated,genshort, async (req, res) => {
   try {
-    console.log(req.user._id)
+    // console.log(req.user._id)
+    // console.log(req.body)
     const newShortUrl = new ShortUrl(
       {
         owner:req.user._id,
-        full: req.body.fullUrl
+        full: req.body.fullUrl,
+        short: req.body.short 
       });
     await newShortUrl.save();
     res.redirect('/api')
@@ -87,6 +97,8 @@ router.route('/shortUrl').post(checkAuthenticated, async (req, res) => {
     res.status(500).send("server error");
   }
 })
+
+
 
 // check if the user is authenticated if not redirect to login , this to block unauthenticated users from accessing the home page
 function checkAuthenticated(req, res, next) {

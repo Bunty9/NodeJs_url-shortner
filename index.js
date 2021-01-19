@@ -34,6 +34,19 @@ app.use(methodOverride('_method'))
 // app.get(/* ... */)
 app.use('/api',routes)
 
+app.get('/',(req,res) => {
+  res.render('home.ejs')
+})
+
+app.get('/:id', async (req, res) => {
+  const shortUrl = await ShortUrl.findOne({ short: req.params.id })
+  console.log(shortUrl)
+  if (shortUrl == null) return res.sendStatus(404)
+  shortUrl.clicks++
+  shortUrl.save()
+  res.redirect(shortUrl.full)
+})
+
 // Error handlers
 app.use(function fourOhFourHandler (req, res) {
   res.status(404).send()
@@ -43,14 +56,7 @@ app.use(function fiveHundredHandler (err, req, res, next) {
   res.status(500).send()
 })
 
-app.get('/:id', async (req, res) => {
-  const shortUrl = await ShortUrl.findOne({ short: req.params.id })
-  if (shortUrl == null) return res.sendStatus(404)
 
-  shortUrl.clicks++
-  shortUrl.save()
-  res.redirect(shortUrl.full)
-})
 
 
 // Start server
